@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+body {
+  font-family: 'Poppins', sans-serif;
+}
+.font-lobster {
+  font-family: 'Lobster', cursive;
+}
+@theme {
+  --font-display: "Poppins", "Lobster";
+  
+  /* Red Variations - Original colors preserved */
+  --color-red-primary: #d22617;
+  --color-red-light: #f05545;
+  --color-red-lightest: #ff8a7d;
+  --color-red-deep: #a61d11;
+  --color-red-deepest: #7a150c;
+  
+  /* Additional Red Variants */
+  --color-red-100: #fee2e2;
+  --color-red-200: #fcc5c5;
+  --color-red-300: #f9a8a8;
+  --color-red-400: #f57c7c;
+  --color-red-500: #e85a4f; /* Your test color */
+  --color-red-600: #d22617; /* Your primary red */
+  --color-red-700: #a61d11; /* Your deep red */
+  --color-red-800: #7a150c; /* Your deepest red */
+  --color-red-900: #4c0e07;
+  
+  /* Orange Variations - Original colors preserved */
+  --color-orange-primary: #d78f11;
+  --color-orange-light: #f9e1b8;
+  --color-orange-deep: #bf7e0d;
+  
+  /* Additional Orange Variants */
+  --color-orange-100: #fef3e0;
+  --color-orange-200: #fde7c2;
+  --color-orange-300: #f9e1b8; /* Your light orange */
+  --color-orange-400: #f5c06a;
+  --color-orange-500: #e9a83a;
+  --color-orange-600: #d78f11; /* Your primary orange */
+  --color-orange-700: #bf7e0d; /* Your deep orange */
+  --color-orange-800: #996407;
+  --color-orange-900: #734b06;
+  
+  /* Brown/Gold Variations - Original colors preserved */
+  --color-brown-primary: #8f7c31;
+  --color-gold-primary: #8f7c31;
+  
+  /* Additional Gold/Brown Variants */
+  --color-gold-100: #f8f4e3;
+  --color-gold-200: #f1e9c7;
+  --color-gold-300: #e5d89c;
+  --color-gold-400: #d2c06b;
+  --color-gold-500: #b29c42;
+  --color-gold-600: #8f7c31; /* Your primary gold/brown */
+  --color-gold-700: #756528;
+  --color-gold-800: #5c4e1f;
+  --color-gold-900: #433815;
+  
+  /* Blue Variations - Original colors preserved */
+  --color-blue-primary: #259591;
+  --color-blue-deep: #1a6e6b;
+  --color-blue-deepest: #041530; /* Fixed the double # typo */
+  --color-blue-light: #c2f0ed;
+  
+  /* Additional Blue Variants */
+  --color-blue-100: #e0f7f6;
+  --color-blue-200: #c2f0ed; /* Your light blue */
+  --color-blue-300: #a0e8e4;
+  --color-blue-400: #68d4cf;
+  --color-blue-500: #3db8b3;
+  --color-blue-600: #259591; /* Your primary blue */
+  --color-blue-700: #1a6e6b; /* Your deep blue */
+  --color-blue-800: #114544;
+  --color-blue-900: #041530; /* Your deepest blue (fixed) */
+  
+    /* New Color: Joyful Green (blue + gold blend) */
+  --color-green-100: #e5f5e0;
+  --color-green-200: #d1ebb5;
+  --color-green-300: #b9dd8a;
+  --color-green-400: #a3ce63;
+  --color-green-500: #8dbe42;
+  --color-green-600: #79ad39;
+  --color-green-700: #62902f;
+  --color-green-800: #4c7225;
+  --color-green-900: #38541c;
+  
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.6s linear;
+}
+
+.scale-98 {
+  transform: scale(0.98);
+}
+
+.scale-102 {
+  transform: scale(1.02);
+}
+
+.signup-step {
+  animation: slideInFromLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.signup-step-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* styles/hover-effects.css */
+
+/* Ensure group hover effects work properly */
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+.group:hover .group-hover\:visible {
+  visibility: visible;
+}
+
+/* Smooth transitions for hover effects */
+.transition-all {
+  transition-property: all;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+}
+
+.duration-200 {
+  transition-duration: 200ms;
+}
+
+/* Ensure invisible elements don't interfere with interactions */
+.invisible {
+  visibility: hidden;
+}
+
+.visible {
+  visibility: visible;
+}
+
+/* Emoji button specific styles */
+.emoji-reaction-button {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease-in-out, visibility 200ms ease-in-out;
+}
+
+.group:hover .emoji-reaction-button {
+  opacity: 1;
+  visibility: visible;
+}
+
