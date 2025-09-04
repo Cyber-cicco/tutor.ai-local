@@ -22,6 +22,7 @@ The course encapsulate every other JSON structures
     "name": "the name",
     "topic": "the topic",
     "level": "the level asked , one of the following : ABSOLUTE_BEGINNER / NOVICE / JUNIOR / MID_LEVEL / ADVANCED / EXPERT",
+    "language": "the language, one of the following : FR / EN / ESP / ITA / GERM"
     "modules" : [...] // an array of modules
  }
  

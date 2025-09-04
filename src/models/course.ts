@@ -1,7 +1,13 @@
+export type CourseWithId = {
+    course: Course,
+    identifier: string,
+}
+
 export type Course = {
     name: string
     topic: string
     done: boolean
+    author: string
     level: CourseLevel
     modules: Module[]
 }
@@ -13,9 +19,12 @@ export type Module = {
     title: string
     description: string
     content: string
+    language: Language
     done: boolean
     exercises: Exercise[]
 }
+
+export type Language = "FR" | "EN" | "ESP" | "ITA" | "GER"
 
 export type Exercise = QCM | Practise
 
