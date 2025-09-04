@@ -35,5 +35,6 @@ export type QCMResponse = {
 }
 
 export type Practise = {
-
+    content: string
+    correction: string
 }
