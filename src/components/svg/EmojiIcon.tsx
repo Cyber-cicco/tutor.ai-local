@@ -1,6 +1,6 @@
 // components/svg/EmojiIcon.tsx
 
-import React from 'react';
+import typeReact from 'react';
 
 interface EmojiIconProps {
   className?: string;

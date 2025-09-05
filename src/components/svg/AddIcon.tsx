@@ -1,4 +1,4 @@
-import { SvgProps } from "./main.svg";
+import type{ SvgProps } from "./main.svg";
 
 export const AddIcon: React.FC<SvgProps> = ({ width = 20, height = 20, color = "currentColor", className }) => {
   return (

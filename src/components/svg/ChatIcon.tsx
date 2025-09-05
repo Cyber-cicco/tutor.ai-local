@@ -1,4 +1,4 @@
-import { SvgProps } from "./main.svg";
+import type{ SvgProps } from "./main.svg";
 
 export const ChatIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = "#259591", className }) => {
   return (

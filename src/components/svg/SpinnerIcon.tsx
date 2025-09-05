@@ -1,4 +1,4 @@
-import { SvgProps } from "../svg/main.svg";
+import type{ SvgProps } from "../svg/main.svg";
 
 export const SpinnerIcon: React.FC<SvgProps> = ({ width = 16, height = 16, color = "currentColor", className }) => {
   return (

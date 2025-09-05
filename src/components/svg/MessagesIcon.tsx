@@ -1,4 +1,4 @@
-import { SvgProps } from "../svg/main.svg";
+import type{ SvgProps } from "../svg/main.svg";
 
 export const MessagesIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = "#259591", className, stroke = "#c2f0ed" }) => {
   return (

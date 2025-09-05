@@ -1,4 +1,4 @@
-import { SvgProps } from "../svg/main.svg";
+import type{ SvgProps } from "../svg/main.svg";
 
 export const LockIcon: React.FC<SvgProps> = ({ width = 20, height = 20, color = "currentColor", className }) => {
   return (

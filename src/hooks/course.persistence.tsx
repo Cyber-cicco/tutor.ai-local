@@ -122,7 +122,7 @@ function getStorageKey(key: LocalStorageKey, name: string): ValidKey {
   return `${key}-${name}`
 }
 
-export const usePersistence = () => {
+export const useCoursePersistence = () => {
 
   const { showToast } = useToast()
 
@@ -247,8 +247,16 @@ export const usePersistence = () => {
     })
   }
 
-  const getCourseList = (): ResultAsync<CourseMetadata[], AppError> => {
-
+  const getCourseList = (): Result<CourseMetadata[], AppError> => {
+    const cl = getCourseListFromLocalStorage();
+    if (cl.isErr()) {
+      return err(cl.error)
+    }
+    const res: CourseMetadata[] = []
+    for (const val of cl.value.ids.values()) {
+      res.push(val)
+    }
+    return ok(res)
   }
 
   return {

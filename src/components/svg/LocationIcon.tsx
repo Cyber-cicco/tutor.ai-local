@@ -1,4 +1,4 @@
-import { SvgProps } from "../svg/main.svg";
+import type{ SvgProps } from "../svg/main.svg";
 
 export const LocationIcon: React.FC<SvgProps> = ({ width = 12, height = 12, color = "currentColor", className }) => {
   return (

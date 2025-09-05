@@ -1,4 +1,4 @@
-import { SvgProps } from "../svg/main.svg";
+import type{ SvgProps } from "../svg/main.svg";
 
 export const UserIcon: React.FC<SvgProps> = ({ width = 64, height = 64, color = "currentColor", className }) => {
   return (

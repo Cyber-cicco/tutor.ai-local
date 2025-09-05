@@ -1,4 +1,4 @@
-import { SvgProps } from "../svg/main.svg";
+import type{ SvgProps } from "../svg/main.svg";
 
 export const HomeIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = "currentColor", className }) => {
   return (
