@@ -6,7 +6,6 @@ export type CourseWithId = {
 export type Course = {
     name: string
     topic: string
-    done: boolean
     author: string
     level: CourseLevel
     modules: Module[]
@@ -20,7 +19,6 @@ export type Module = {
     description: string
     content: string
     language: Language
-    done: boolean
     exercises: Exercise[]
 }
 
@@ -35,7 +33,6 @@ export type QCMQuestion = {
 
 export type QCM = {
     questions: QCMQuestion
-    done: boolean
 }
 
 export type QCMResponse = {

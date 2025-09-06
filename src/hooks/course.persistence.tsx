@@ -17,7 +17,31 @@ export type StorageOptions = {
   additionnalKey: string
 }
 
+type MapValue = unknown & {
+  dataType: 'Map'
+  value: Iterable<[unknown, unknown]>
+}
+
 type ValidKey = string
+
+function replacer(key:string, value:MapValue) {
+  if (value instanceof Map) {
+    return {
+      dataType: 'Map',
+      value: Array.from(value.entries()), // or with spread: value: [...value]
+    };
+  } else {
+    return value;
+  }
+}
+function reviver(key: string, value: MapValue) {
+  if (typeof value === 'object' && value !== null) {
+    if (value.dataType === 'Map') {
+      return new Map(value.value);
+    }
+  }
+  return value;
+}
 
 function mustGetCourseStrFromLocalStorage(identifier: string): Result<string, StateError> {
   const item = localStorage.getItem(getStorageKey("COURSE", identifier))
@@ -32,7 +56,8 @@ function mustGetCourseStrFromLocalStorage(identifier: string): Result<string, St
 
 function persistCourseListInLocalStorage(cl: CourseList): Result<void, ProcessError> {
   return fromThrowable(() => {
-    const str = JSON.stringify(cl)
+    console.log(cl)
+    const str = JSON.stringify(cl, replacer)
     localStorage.setItem("COURSE_LIST", str)
   }, (err) => {
     return {
@@ -51,7 +76,7 @@ function getCourseListFromLocalStorage(): Result<CourseList, ProcessError> {
         ids: new Map()
       }
     }
-    return JSON.parse(item) as CourseList
+    return JSON.parse(item, reviver) as CourseList
   }, (err) => {
     return {
       type: 'process',
@@ -152,7 +177,7 @@ export const useCoursePersistence = () => {
           })
       ).andThen((res) => {
         // récupération du potentiel contenu de la dernière course
-        if (res.courseListItem != null) {
+        if (res.courseListItem.item != null) {
           return mustGetCourseStrFromLocalStorage(res.courseListItem.id)
             .map((item) => {
               return {
@@ -212,7 +237,7 @@ export const useCoursePersistence = () => {
           })
           return {
             ...res,
-            courseList: cl,
+            courseList: { ...cl },
           }
         })
       }).andThen((res) =>

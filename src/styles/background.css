@@ -1,0 +1,42 @@
+.login-bg {
+  background: linear-gradient(135deg, #259591 0%, #8f7c31 50%, #d78f11 75%, #d22617 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.main-bg {
+  background: linear-gradient(135deg, #7dded9 0%, #d8cb7a 50%, #ffd18e 75%, #ffaaa2 100%);
+}
+
+.bg-with-logo {
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-with-logo::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/logo_simplifier_sans_fond_degrade_totale.webp');
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.15; /* adjust transparency level here (0.0 to 1.0) */
+  z-index: 0;
+  pointer-events: none; /* allows clicking through the background */
+}
+
+.bg-with-logo > *:not(.fixed-navbar) {
+  position: relative;
+  z-index: 1; /* ensures content sits above the background image */
+}
+
+.fixed-navbar {
+  z-index: 10; /* higher z-index to stay on top */
+}
+

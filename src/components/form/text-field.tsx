@@ -14,7 +14,7 @@ export default function TextField({ label, placeholder, mode = "normal", type = 
 
   // Define different styles based on the mode
   const getInputStyles = () => {
-    const baseStyles = "w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-primary transition-all duration-200"
+    const baseStyles = "w-full font-mono rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-primary transition-all duration-200"
     
     switch (mode) {
       case "small":

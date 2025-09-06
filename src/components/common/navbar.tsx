@@ -1,4 +1,3 @@
-// src/components/common/navbar.tsx
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { HomeIcon } from '../svg/HomeIcon';
@@ -22,8 +21,8 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-white w-screen shadow-sm border-b sticky top-0 z-50">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and brand */}
           <div className="flex items-center">
