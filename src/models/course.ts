@@ -24,7 +24,10 @@ export type Module = {
 
 export type Language = "FR" | "EN" | "ESP" | "ITA" | "GER"
 
-export type Exercise = QCM | Practise
+export type Exercise = {
+    type: "QCM" | "PRACTICE"
+    content : QCM | Practise
+}
 
 export type QCMQuestion = {
     question: string

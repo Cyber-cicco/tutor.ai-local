@@ -15,7 +15,7 @@ export function compress(data: unknown): Result<string, ProcessError> {
         }));
 };
 
-export function decompress<T>(compressed: string) {
+export function decompressAndParse<T>(compressed: string) {
     return fromThrowable(atob, compressed)
         .andThen((decoded) =>
             ok(new Uint8Array(decoded.split('').map(c => c.charCodeAt(0))))

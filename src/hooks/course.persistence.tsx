@@ -1,11 +1,12 @@
 import { type CourseWithId, type Course } from "../models/course"
 import { err, fromThrowable, ok, ResultAsync, type Result } from "neverthrow"
 import type { AppError, ProcessError, StateError } from "../utils/error.utils"
-import { compress } from "../utils/compression.utils"
+import { compress, decompressAndParse } from "../utils/compression.utils"
 import { useToast } from "../context/toast-context"
 import { getCourseKey } from "../utils/course.utils"
 import type { CourseList, CourseListItem, CourseListItemWithId, CourseMetadata } from "../models/list"
 import { getSha256Sum } from "../utils/crypto.utils"
+import { decompress } from "fflate"
 
 type LocalStorageKey = "COURSE" | "USER" | "COURSE_ITEM" | "COURSE_LIST"
 
@@ -24,7 +25,7 @@ type MapValue = unknown & {
 
 type ValidKey = string
 
-function replacer(key:string, value:MapValue) {
+function replacer(key: string, value: MapValue) {
   if (value instanceof Map) {
     return {
       dataType: 'Map',
@@ -86,13 +87,31 @@ function getCourseListFromLocalStorage(): Result<CourseList, ProcessError> {
   })()
 }
 
-function getCourseFromLocalStorage(identifier: string): Result<Course | null, ProcessError> {
+function getCurrentCourseIdentifierForItemId(identifier: string): Result<string, ProcessError> {
   return fromThrowable(() => {
+    const content = localStorage.getItem(getStorageKey("COURSE_ITEM", identifier))
+    if (content == null) {
+      throw new Error(`item was null for identifier ${identifier}`)
+    }
+    const item = JSON.parse(content) as CourseListItem
+    return item.objectIdentifier
+  }, (err) => {
+    return {
+      type: "process",
+      origin: err,
+      message: `Error getting the course item : ${err}`,
+    } as ProcessError
+
+  })()
+}
+
+function getCourseFromLocalStorage(identifier: string): Result<Course, ProcessError> {
+  const item = fromThrowable(() => {
     const item = localStorage.getItem(getStorageKey("COURSE", identifier))
     if (item == null) {
-      return null
+      throw new Error(`no course found for identifier ${identifier}`)
     }
-    return JSON.parse(item) as Course
+    return item
   }, (err) => {
     return {
       type: "process",
@@ -100,6 +119,10 @@ function getCourseFromLocalStorage(identifier: string): Result<Course | null, Pr
       message: `Error parsing the course : ${err}`,
     } as ProcessError
   })()
+  if (item.isErr()) {
+    return err(item.error)
+  }
+  return decompressAndParse<Course>(item.value)
 }
 
 function persistCourseItemInLocalStorage(identifier: string, item: CourseListItem) {
@@ -256,15 +279,12 @@ export const useCoursePersistence = () => {
   }
 
   const getCourse = (identifier: string): Result<CourseWithId, AppError> => {
-    const course = getCourseFromLocalStorage(identifier)
+    const course = getCurrentCourseIdentifierForItemId(identifier)
+      .andThen((id) => {
+        return getCourseFromLocalStorage(id)
+      })
     if (course.isErr()) {
       return err(course.error)
-    }
-    if (!course.value) {
-      return err({
-        type: 'state',
-        message: `No course was found for identifier `,
-      })
     }
     return ok({
       identifier: identifier,
