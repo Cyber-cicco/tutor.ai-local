@@ -46,15 +46,7 @@ export const HomePage: React.FC = () => {
         const result = await persistCourse(parsedCourse);
 
         if (result.isOk()) {
-          // Navigate to course page - we need to get the course identifier
-          // The persistence returns void, so we need to get the course key
-          const courseKey = await import('../../utils/course.utils').then(utils =>
-            utils.getCourseKey(parsedCourse)
-          );
-
-          if (courseKey.isOk()) {
-            navigate(`/course?id=${courseKey.value}`);
-          }
+          navigate(`/course?id=${result.value}`);
         }
       } catch (error) {
         console.error('Error parsing course JSON:', error);
@@ -88,7 +80,6 @@ export const HomePage: React.FC = () => {
       // Copy prompt to clipboard
       try {
         await navigator.clipboard.writeText(completePrompt);
-        alert('Prompt copié dans le presse-papier! Collez-le dans votre IA favorite pour générer le cours.');
       } catch (error) {
         console.error('Failed to copy to clipboard:', error);
         alert('Erreur lors de la copie. Voici le prompt:\n\n' + completePrompt);
@@ -98,9 +89,7 @@ export const HomePage: React.FC = () => {
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
-  };
-
-  const handleSidebarClose = () => {
+  }; const handleSidebarClose = () => {
     setSidebarOpen(false);
   };
 

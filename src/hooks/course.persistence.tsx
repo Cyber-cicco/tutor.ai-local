@@ -174,7 +174,7 @@ export const useCoursePersistence = () => {
 
   const { showToast } = useToast()
 
-  const persistCourse = (content: Course): ResultAsync<void, AppError> => {
+  const persistCourse = (content: Course): ResultAsync<string, AppError> => {
     type CourseData = {
       course: CourseWithId
       courseListItem: CourseListItemWithId
@@ -269,7 +269,9 @@ export const useCoursePersistence = () => {
           persistCourseItemInLocalStorage(res.courseListItem.id, res.courseListItem.item)
         ).andThen(() =>
           persistCourseListInLocalStorage(res.courseList)
-        )
+        ).andThen(() => {
+          return ok(res.course.identifier)
+        })
       )
       .orElse((error) => {
         console.error(error)
@@ -279,10 +281,7 @@ export const useCoursePersistence = () => {
   }
 
   const getCourse = (identifier: string): Result<CourseWithId, AppError> => {
-    const course = getCurrentCourseIdentifierForItemId(identifier)
-      .andThen((id) => {
-        return getCourseFromLocalStorage(id)
-      })
+    const course = getCourseFromLocalStorage(identifier)
     if (course.isErr()) {
       return err(course.error)
     }

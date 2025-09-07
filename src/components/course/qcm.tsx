@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { CheckmarkIcon } from '../svg/CheckmarkIcon';
 import { CrossIcon } from '../svg/CrossIcon';
-import type { QCM } from '../../models/course';
+import type { QCM, QCMQuestion } from '../../models/course';
 
 interface QCMProps {
   qcm: QCM;
@@ -11,19 +11,28 @@ interface QCMProps {
 }
 
 export const QCMComponent: React.FC<QCMProps> = ({ qcm, isCompleted, onToggleCompleted }) => {
-  const [selectedAnswers, setSelectedAnswers] = useState<Set<number>>(new Set());
+  const [selectedAnswers, setSelectedAnswers] = useState<Map<number, Set<number>>>(new Map());
   const [showResults, setShowResults] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const handleAnswerSelect = (answerIndex: number) => {
+  const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {
     if (hasSubmitted) return;
     
-    const newSelected = new Set(selectedAnswers);
-    if (newSelected.has(answerIndex)) {
-      newSelected.delete(answerIndex);
+    const newSelected = new Map(selectedAnswers);
+    const answersForQuestion = newSelected.get(questionIndex) || new Set();
+    
+    if (answersForQuestion.has(answerIndex)) {
+      answersForQuestion.delete(answerIndex);
     } else {
-      newSelected.add(answerIndex);
+      answersForQuestion.add(answerIndex);
     }
+
+    if (answersForQuestion.size === 0) {
+      newSelected.delete(questionIndex);
+    } else {
+      newSelected.set(questionIndex, answersForQuestion);
+    }
+    
     setSelectedAnswers(newSelected);
   };
 
@@ -31,43 +40,52 @@ export const QCMComponent: React.FC<QCMProps> = ({ qcm, isCompleted, onToggleCom
     setHasSubmitted(true);
     setShowResults(true);
     
-    // Check if all correct answers are selected and no incorrect ones
-    const correctAnswers = qcm.questions.responses
-      .map((response, index) => ({ response, index }))
-      .filter(({ response }) => response.rightAnswer)
-      .map(({ index }) => index);
-    
-    const allCorrect = correctAnswers.every(index => selectedAnswers.has(index)) &&
-                     Array.from(selectedAnswers).every(index => 
-                       qcm.questions.responses[index].rightAnswer
-                     );
-    
+    let allCorrect = true;
+    for (let i = 0; i < qcm.questions.length; i++) {
+      const question = qcm.questions[i];
+      const correctAnswers = question.responses
+        .map((response, index) => ({ response, index }))
+        .filter(({ response }) => response.rightAnswer)
+        .map(({ index }) => index);
+
+      const userSelected = selectedAnswers.get(i) || new Set();
+
+      const isQuestionCorrect = correctAnswers.every(index => userSelected.has(index)) &&
+                               Array.from(userSelected).every(index => question.responses[index].rightAnswer);
+      
+      if (!isQuestionCorrect) {
+        allCorrect = false;
+        break;
+      }
+    }
+
     if (allCorrect && !isCompleted) {
       onToggleCompleted();
     }
   };
 
   const handleReset = () => {
-    setSelectedAnswers(new Set());
+    setSelectedAnswers(new Map());
     setShowResults(false);
     setHasSubmitted(false);
   };
 
-  const getAnswerClassName = (answerIndex: number, isSelected: boolean) => {
+  const getAnswerClassName = (questionIndex: number, answerIndex: number) => {
+    const isSelected = selectedAnswers.get(questionIndex)?.has(answerIndex);
+    const isCorrect = qcm.questions[questionIndex].responses[answerIndex].rightAnswer;
+
     if (!showResults) {
-      return `p-4 border rounded-lg cursor-pointer transition-all hover:cursor-pointer ${
+      return `p-4 border rounded-lg transition-all hover:cursor-pointer ${
         isSelected
           ? 'border-blue-500 bg-blue-50 text-blue-900'
           : 'border-gray-300 hover:border-blue-300 hover:bg-blue-50'
       }`;
     }
 
-    const isCorrect = qcm.questions.responses[answerIndex].rightAnswer;
-    
     if (isCorrect && isSelected) {
-      return 'p-4 border rounded-lg border-green-500 bg-green-50 text-green-900';
+      return 'p-4 border rounded-lg border-gold-500 bg-gold-50 text-gold-900';
     } else if (isCorrect && !isSelected) {
-      return 'p-4 border rounded-lg border-green-500 bg-green-50 text-green-900 opacity-70';
+      return 'p-4 border rounded-lg border-gold-500 bg-gold-50 text-gold-900 opacity-70';
     } else if (!isCorrect && isSelected) {
       return 'p-4 border rounded-lg border-red-500 bg-red-50 text-red-900';
     } else {
@@ -75,89 +93,93 @@ export const QCMComponent: React.FC<QCMProps> = ({ qcm, isCompleted, onToggleCom
     }
   };
 
-  const getIcon = (answerIndex: number, isSelected: boolean) => {
+  const getIcon = (questionIndex: number, answerIndex: number) => {
     if (!showResults) return null;
     
-    const isCorrect = qcm.questions.responses[answerIndex].rightAnswer;
+    const isCorrect = qcm.questions[questionIndex].responses[answerIndex].rightAnswer;
+    const isSelected = selectedAnswers.get(questionIndex)?.has(answerIndex);
     
     if (isCorrect) {
-      return <CheckmarkIcon className="h-5 w-5 text-green-600" />;
+      return <CheckmarkIcon className="h-5 w-5 text-gold-600" />;
     } else if (isSelected && !isCorrect) {
       return <CrossIcon className="h-5 w-5 text-red-600" />;
     }
     
     return null;
   };
+  console.log(qcm)
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">
-          {qcm.questions.question}
-        </h4>
-        
-        <div className="space-y-3">
-          {qcm.questions.responses.map((response, index) => {
-            const isSelected = selectedAnswers.has(index);
-            
-            return (
-              <div
-                key={index}
-                className={getAnswerClassName(index, isSelected)}
-                onClick={() => handleAnswerSelect(index)}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="flex-1">{response.content}</span>
-                  <div className="flex items-center space-x-2">
-                    {getIcon(index, isSelected)}
-                    <div className={`w-4 h-4 border-2 rounded ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {isSelected && (
-                        <div className="w-full h-full bg-white rounded-sm m-0.5"></div>
-                      )}
+    <div className="space-y-6">
+      {qcm.questions.map((q: QCMQuestion, questionIndex: number) => (
+        <div key={questionIndex} className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-medium text-gray-900 mb-4">
+            {q.question}
+          </h4>
+          
+          <div className="space-y-3">
+            {q.responses.map((response, answerIndex) => {
+              const isSelected = selectedAnswers.get(questionIndex)?.has(answerIndex);
+              
+              return (
+                <div
+                  key={answerIndex}
+                  className={getAnswerClassName(questionIndex, answerIndex)}
+                  onClick={() => handleAnswerSelect(questionIndex, answerIndex)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="flex-1">{response.content}</span>
+                    <div className="flex items-center space-x-2">
+                      {getIcon(questionIndex, answerIndex)}
+                      <div className={`w-4 h-4 border-2 rounded ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-500'
+                          : 'border-gray-300'
+                      }`}>
+                        {isSelected && (
+                          <div className="w-full h-full bg-white rounded-sm m-0.5"></div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex space-x-3">
-            {!hasSubmitted ? (
-              <button
-                onClick={handleSubmit}
-                disabled={selectedAnswers.size === 0}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:cursor-pointer"
-              >
-                Valider les réponses
-              </button>
-            ) : (
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors hover:cursor-pointer"
-              >
-                Recommencer
-              </button>
-            )}
+              );
+            })}
           </div>
-          
-          <button
-            onClick={onToggleCompleted}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors hover:cursor-pointer ${
-              isCompleted
-                ? 'bg-gold-100 text-gold-800 hover:bg-gold-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <CheckmarkIcon className="h-4 w-4" />
-            <span>{isCompleted ? 'Complété' : 'Marquer comme complété'}</span>
-          </button>
         </div>
+      ))}
+
+      <div className="mt-6 flex items-center justify-between">
+        <div className="flex space-x-3">
+          {!hasSubmitted ? (
+            <button
+              onClick={handleSubmit}
+              disabled={selectedAnswers.size === 0}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:cursor-pointer"
+            >
+              Valider les réponses
+            </button>
+          ) : (
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors hover:cursor-pointer"
+            >
+              Recommencer
+            </button>
+          )}
+        </div>
+        
+        <button
+          onClick={onToggleCompleted}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors hover:cursor-pointer ${
+            isCompleted
+              ? 'bg-gold-100 text-gold-800 hover:bg-gold-200'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          <CheckmarkIcon className="h-4 w-4" />
+          <span>{isCompleted ? 'Complété' : 'Marquer comme complété'}</span>
+        </button>
       </div>
     </div>
   );

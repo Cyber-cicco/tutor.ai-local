@@ -24,10 +24,7 @@ export type Module = {
 
 export type Language = "FR" | "EN" | "ESP" | "ITA" | "GER"
 
-export type Exercise = {
-    type: "QCM" | "PRACTICE"
-    content : QCM | Practise
-}
+export type Exercise = QCM | Practise
 
 export type QCMQuestion = {
     question: string
@@ -35,7 +32,9 @@ export type QCMQuestion = {
 }
 
 export type QCM = {
-    questions: QCMQuestion
+    title: string
+    type: 'QCM'
+    questions: QCMQuestion[]
 }
 
 export type QCMResponse = {
@@ -44,6 +43,8 @@ export type QCMResponse = {
 }
 
 export type Practise = {
+    title:string
+    type:'PRACTICE'
     content: string
     correction: string
 }

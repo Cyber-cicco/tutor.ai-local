@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// src/components/course/main.tsx
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CourseHeader } from './header';
 import { CourseContent } from './content';
@@ -17,6 +18,9 @@ export const CoursePage: React.FC = () => {
   const navigate = useNavigate();
   const { getCourse } = useCoursePersistence();
   
+  // Add ref for the scrollable container
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+  
   const courseId = searchParams.get('id');
   const moduleIndex = parseInt(searchParams.get('module') || '0');
   
@@ -27,6 +31,24 @@ export const CoursePage: React.FC = () => {
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Improved scroll reset function
+  const resetScrollPosition = useCallback(() => {
+    if (contentScrollRef.current) {
+      // Force immediate scroll to top without animation
+      contentScrollRef.current.scrollTop = 0;
+      
+      // Force a reflow to ensure the scroll position is applied
+      contentScrollRef.current.offsetHeight;
+      
+      // Optional: Add a small delay to ensure content is rendered
+      requestAnimationFrame(() => {
+        if (contentScrollRef.current) {
+          contentScrollRef.current.scrollTop = 0;
+        }
+      });
+    }
+  }, []);
 
   // Load course data
   useEffect(() => {
@@ -49,7 +71,7 @@ export const CoursePage: React.FC = () => {
       setError('Cours introuvable');
     }
     setLoading(false);
-  }, [courseId, getCourse, navigate]);
+  }, [courseId]);
 
   // Save completed exercises to localStorage
   useEffect(() => {
@@ -58,7 +80,20 @@ export const CoursePage: React.FC = () => {
     }
   }, [completedExercises, courseId]);
 
+  // Enhanced scroll handling when module changes
+  useEffect(() => {
+    // Reset scroll position immediately when module changes
+    resetScrollPosition();
+    
+    // Also collapse any expanded exercises when changing modules
+    setExpandedExercises(new Set());
+  }, [moduleIndex, resetScrollPosition]);
+
   const handleModuleChange = (newModuleIndex: number) => {
+    // First, scroll to top immediately
+    resetScrollPosition();
+    
+    // Then update the URL params
     setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
       newParams.set('module', newModuleIndex.toString());
@@ -112,7 +147,7 @@ export const CoursePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/0 flex items-center justify-center">
+      <div className="h-screen bg-white/0 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement du cours...</p>
@@ -123,7 +158,7 @@ export const CoursePage: React.FC = () => {
 
   if (error || !course) {
     return (
-      <div className="min-h-screen bg-white/0 flex items-center justify-center">
+      <div className="h-screen bg-white/0 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
           <DocumentIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Cours introuvable</h2>
@@ -143,14 +178,14 @@ export const CoursePage: React.FC = () => {
   const progress = getProgressPercentage();
 
   return (
-    <div className="bg-white/0 min-h-screen">
+    <div className="h-[calc(100vh-4.2rem)] bg-white/0 flex flex-col">
       <CourseHeader 
         course={course}
         progress={progress}
         onBackToCourseList={() => navigate('/home')}
       />
 
-      <div className="flex">
+      <div className="flex flex-1 min-h-0">
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div 
@@ -162,7 +197,7 @@ export const CoursePage: React.FC = () => {
         {/* Sidebar */}
         <div className={`
           fixed lg:static inset-y-0 left-0 z-50 bg-white shadow-lg lg:shadow-none border-r border-gray-200
-          transition-all duration-300 lg:transition-none
+          transition-all duration-300 lg:transition-none lg:h-full
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${sidebarExpanded ? 'w-80' : 'w-12 lg:w-12'}
         `}>
@@ -237,113 +272,126 @@ export const CoursePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Main content */}
-        <main className={`flex-1 transition-all duration-300 ${
+        {/* Main content - Enhanced scrollable container */}
+        <main className={`flex-1 transition-all duration-300 min-h-0 ${
           sidebarExpanded ? 'lg:ml-0' : 'lg:ml-0'
         }`}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Mobile menu button */}
-            <div className="lg:hidden mb-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors hover:cursor-pointer"
-              >
-                <ListIcon className="h-5 w-5" />
-              </button>
-            </div>
+          <div 
+            ref={contentScrollRef} 
+            className="h-full overflow-y-auto scroll-smooth"
+            style={{
+              // Force hardware acceleration for smoother scrolling
+              transform: 'translateZ(0)',
+              willChange: 'scroll-position'
+            }}
+          >
+            {/* Content wrapper with consistent min-height */}
+            <div className="min-h-full">
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Mobile menu button */}
+                <div className="lg:hidden mb-4">
+                  <button
+                    onClick={() => setSidebarOpen(true)}
+                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors hover:cursor-pointer"
+                  >
+                    <ListIcon className="h-5 w-5" />
+                  </button>
+                </div>
 
-            {/* Module content */}
-            <CourseContent module={currentModule} />
+                {/* Module content */}
+                <CourseContent module={currentModule} />
 
-            {/* Exercises */}
-            {currentModule.exercises && currentModule.exercises.length > 0 && (
-              <div className="mt-8 bg-gray-50 rounded-2xl p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <CheckmarkIcon className="h-6 w-6 text-blue-600" />
-                  Exercices pratiques
-                </h3>
-                
-                <div className="space-y-6">
-                  {currentModule.exercises.map((exercise, exerciseIndex) => {
-                    const exerciseKey = `${moduleIndex}-${exerciseIndex}`;
-                    const isExpanded = expandedExercises.has(exerciseKey);
-                    const isCompleted = completedExercises.has(exerciseKey);
+                {/* Exercises */}
+                {currentModule.exercises && currentModule.exercises.length > 0 && (
+                  <div className="mt-8 bg-gray-50 rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                      <CheckmarkIcon className="h-6 w-6 text-blue-600" />
+                      Exercices pratiques
+                    </h3>
+                    
+                    <div className="space-y-6">
+                      {currentModule.exercises.map((exercise, exerciseIndex) => {
+                        const exerciseKey = `${moduleIndex}-${exerciseIndex}`;
+                        const isExpanded = expandedExercises.has(exerciseKey);
+                        const isCompleted = completedExercises.has(exerciseKey);
 
-                    return (
-                      <div key={exerciseIndex} className="bg-white rounded-lg shadow-sm border">
-                        <div 
-                          className="p-4 cursor-pointer hover:bg-gray-50 transition-colors hover:cursor-pointer"
-                          onClick={() => toggleExercise(exerciseKey)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <ChevronDownIcon 
-                                className={`h-5 w-5 text-gray-500 transition-transform ${
-                                  isExpanded ? 'rotate-0' : '-rotate-90'
-                                }`}
-                              />
-                              <h4 className="font-medium text-gray-900">
-                                Exercice {exerciseIndex + 1}
-                              </h4>
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                exercise.type === 'PRACTICE' 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
-                              </span>
+                        return (
+                          <div key={exerciseIndex} className="bg-white rounded-lg shadow-sm border">
+                            <div 
+                              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors hover:cursor-pointer"
+                              onClick={() => toggleExercise(exerciseKey)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <ChevronDownIcon 
+                                    className={`h-5 w-5 text-gray-500 transition-transform ${
+                                      isExpanded ? 'rotate-0' : '-rotate-90'
+                                    }`}
+                                  />
+                                  <h4 className="font-medium text-gray-900">
+                                    Exercice {exerciseIndex + 1}
+                                  </h4>
+                                  <span className={`px-2 py-1 text-xs rounded-full ${
+                                    exercise.type === 'PRACTICE' 
+                                      ? 'bg-blue-100 text-blue-800' 
+                                      : 'bg-green-100 text-green-800'
+                                  }`}>
+                                  </span>
+                                </div>
+                                <div className={`w-4 h-4 rounded-full border-2 ${
+                                  isCompleted
+                                    ? 'bg-gold-500 border-gold-500'
+                                    : 'border-gray-300'
+                                }`}>
+                                  {isCompleted && (
+                                    <CheckmarkIcon className="h-3 w-3 text-white m-0.5" />
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <div className={`w-4 h-4 rounded-full border-2 ${
-                              isCompleted
-                                ? 'bg-gold-500 border-gold-500'
-                                : 'border-gray-300'
-                            }`}>
-                              {isCompleted && (
-                                <CheckmarkIcon className="h-3 w-3 text-white m-0.5" />
-                              )}
-                            </div>
-                          </div>
-                        </div>
 
-                        {isExpanded && (
-                          <div className="border-t bg-gray-50 p-4">
-                            {'questions' in exercise ? (
-                              <QCMComponent
-                                qcm={exercise}
-                                isCompleted={isCompleted}
-                                onToggleCompleted={() => toggleExerciseCompleted(exerciseKey)}
-                              />
-                            ) : (
-                              <PracticeComponent
-                                practice={exercise}
-                                isCompleted={isCompleted}
-                                onToggleCompleted={() => toggleExerciseCompleted(exerciseKey)}
-                              />
+                            {isExpanded && (
+                              <div className="border-t bg-gray-50 p-4">
+                                {exercise.type === 'QCM' ? (
+                                  <QCMComponent
+                                    qcm={exercise}
+                                    isCompleted={isCompleted}
+                                    onToggleCompleted={() => toggleExerciseCompleted(exerciseKey)}
+                                  />
+                                ) : (
+                                  <PracticeComponent
+                                    practice={exercise}
+                                    isCompleted={isCompleted}
+                                    onToggleCompleted={() => toggleExerciseCompleted(exerciseKey)}
+                                  />
+                                )}
+                              </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation */}
+                <div className="flex justify-between mt-8 pb-8">
+                  <button
+                    onClick={() => handleModuleChange(Math.max(0, moduleIndex - 1))}
+                    disabled={moduleIndex === 0}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:cursor-pointer"
+                  >
+                    ← Module précédent
+                  </button>
+                  <button
+                    onClick={() => handleModuleChange(Math.min(course.modules.length - 1, moduleIndex + 1))}
+                    disabled={moduleIndex === course.modules.length - 1}
+                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:cursor-pointer"
+                  >
+                    Module suivant →
+                  </button>
                 </div>
               </div>
-            )}
-
-            {/* Navigation */}
-            <div className="flex justify-between mt-8">
-              <button
-                onClick={() => handleModuleChange(Math.max(0, moduleIndex - 1))}
-                disabled={moduleIndex === 0}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:cursor-pointer"
-              >
-                ← Module précédent
-              </button>
-              <button
-                onClick={() => handleModuleChange(Math.min(course.modules.length - 1, moduleIndex + 1))}
-                disabled={moduleIndex === course.modules.length - 1}
-                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:cursor-pointer"
-              >
-                Module suivant →
-              </button>
             </div>
           </div>
         </main>
