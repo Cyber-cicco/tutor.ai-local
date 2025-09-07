@@ -52,7 +52,7 @@ export const CourseListSidebar: React.FC<CourseListSidebarProps> = ({
 
       {/* Desktop sidebar - positioned below navbar with higher z-index */}
       <aside 
-        className={`hidden lg:block fixed left-0 top-16 bg-white/10 backdrop-blur-sm border-r overflow-y-auto border-gray-200/50 h-[calc(100vh-4rem)] z-[60] transition-all duration-300 ease-in-out ${
+        className={`hidden lg:block fixed left-0 top-16 bg-white/90 backdrop-blur-sm border-r overflow-y-auto border-gray-200/50 h-[calc(100vh-4rem)] z-[60] transition-all duration-300 ease-in-out ${
           sidebarExpanded ? 'w-80' : 'w-12 overflow-hidden'
         }`}
       >

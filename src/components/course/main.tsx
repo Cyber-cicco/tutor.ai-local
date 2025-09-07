@@ -38,9 +38,6 @@ export const CoursePage: React.FC = () => {
       // Force immediate scroll to top without animation
       contentScrollRef.current.scrollTop = 0;
       
-      // Force a reflow to ensure the scroll position is applied
-      contentScrollRef.current.offsetHeight;
-      
       // Optional: Add a small delay to ensure content is rendered
       requestAnimationFrame(() => {
         if (contentScrollRef.current) {
@@ -196,7 +193,7 @@ export const CoursePage: React.FC = () => {
 
         {/* Sidebar */}
         <div className={`
-          fixed lg:static inset-y-0 left-0 z-50 bg-white shadow-lg lg:shadow-none border-r border-gray-200
+          fixed lg:static inset-y-0 left-0 z-50 bg-white/90 shadow-lg lg:shadow-none border-r border-gray-200
           transition-all duration-300 lg:transition-none lg:h-full
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${sidebarExpanded ? 'w-80' : 'w-12 lg:w-12'}

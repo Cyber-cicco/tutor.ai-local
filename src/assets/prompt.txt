@@ -75,6 +75,14 @@ The course encapsulate every other JSON structures
  }
  
 </format_guidelines>
+<general_guidelines>
+Common mistakes to avoid :
+
+ * In LaTeX, using "x" instead of "\times"
+ * In LaTeX, you MUST ALWAYS follow a \\ by a space or a newline, to avoid any problem with rendering
+
+
+</general_guidelines>
 <instructions>
   // the user instructions
 </instructions>

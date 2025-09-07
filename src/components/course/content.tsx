@@ -1,15 +1,20 @@
+// src/components/course/content.tsx
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import type { Module } from '../../models/course';
+import rehypeStringify from 'rehype-stringify';
+import rehypeKatex from 'rehype-katex';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
 
 interface CourseContentProps {
   module: Module;
 }
 
 export const CourseContent: React.FC<CourseContentProps> = ({ module }) => {
+  console.log(module.content)
   return (
     <div className="bg-white rounded-xl shadow-lg">
       {/* Module Header */}
@@ -22,8 +27,8 @@ export const CourseContent: React.FC<CourseContentProps> = ({ module }) => {
       <div className="p-6">
         <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
           <ReactMarkdown
-            remarkPlugins={[remarkMath]}
-            rehypePlugins={[rehypeKatex]}
+            remarkPlugins={[remarkParse, remarkMath, remarkRehype]}
+            rehypePlugins={[rehypeKatex, rehypeStringify]}
             components={{
               h1: ({ children }) => (
                 <h1 className="text-2xl font-bold text-blue-900 mt-6 mb-4">{children}</h1>
